@@ -162,6 +162,64 @@ nav.scrolled {
 .hero-signin a { color:var(--teal-text); text-decoration:none; font-weight:600; }
 .hero-signin a:hover { text-decoration:underline; }
 
+.hero-promise {
+  font-family:'Nunito',sans-serif; font-weight:700;
+  font-size: clamp(16px,2vw,19px);
+  color:var(--ink);
+  max-width:520px;
+  line-height:1.6;
+  margin-bottom:14px;
+  animation: fadeUp .8s .15s ease both;
+}
+
+/* ── RECOGNITION ── */
+.recognition-row {
+  display:flex; flex-wrap:wrap; justify-content:center; gap:10px;
+  max-width:760px; margin:0 auto;
+}
+.recognition-item {
+  font-size:14px; color:var(--muted);
+  background:var(--surface); border:1px solid var(--line);
+  border-radius:30px; padding:8px 18px;
+}
+
+/* ── TRANSFORMATION ── */
+.transform-row {
+  display:flex; align-items:center; justify-content:center; gap:28px;
+  flex-wrap:wrap; margin-top:12px;
+}
+.transform-fragments {
+  display:flex; flex-direction:column; gap:10px;
+  flex:1 1 260px; max-width:300px;
+}
+.fragment-card {
+  background:var(--surface); border:1px solid var(--line);
+  border-radius:14px; padding:12px 16px;
+  font-size:14px; color:var(--ink);
+}
+.transform-arrow {
+  font-family:'Nunito',sans-serif; font-weight:800; font-size:15px;
+  color:var(--teal-text); letter-spacing:.04em; white-space:nowrap;
+  flex:0 0 auto;
+}
+.transform-result { flex:1 1 300px; max-width:340px; }
+.result-mock {
+  background:#f4f8fb; color:#17324d; border-radius:20px;
+  padding:22px 22px 18px; box-shadow:var(--shadow-xl);
+}
+.result-mock-label {
+  font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+  color:#0f8a7c; margin-bottom:6px;
+}
+.result-mock-title {
+  font-family:'DM Serif Display',serif; font-size:20px; margin-bottom:14px;
+}
+.result-mock-line {
+  font-size:13.5px; padding:9px 0; border-top:1px solid #d5e0e9;
+  color:#3d5266;
+}
+.result-mock-line:first-of-type { border-top:none; }
+
 /* scroll indicator */
 .scroll-hint {
   position:absolute; bottom:32px; left:50%; transform:translateX(-50%);
@@ -357,26 +415,22 @@ footer {
     <span class="hero-eyebrow-dot"></span>
     A calm AI life companion
   </div>
-  <h1 class="hero-title">You shouldn't have to<br><em>maintain a system just to trust it.</em></h1>
-  <p class="hero-sub">Arelo is a calm AI companion for everything you're keeping track of — email, plans, people, life admin. It's built to keep up as things change, so you don't have to hold it all yourself.</p>
+  <h1 class="hero-title">YOUR CHAOS —<br><em>ORGANISED.</em></h1>
+  <p class="hero-promise">What you need to deal with now. What's next. Arelo holds the rest.</p>
+  <p class="hero-sub">Email, messages, school, work, appointments, letters — life arrives in fragments. Arelo turns the meaning into something manageable.</p>
   <div class="hero-ctas">
-    <a class="cta-primary" href="/coming-soon">Join the waiting list</a>
-    <a class="cta-ghost" href="/demo" id="demoBtn">Try the interactive demo</a>
+    <a class="cta-primary" href="#transformation">See Arelo organise it</a>
+    <a class="cta-ghost" href="/coming-soon">Join the waiting list</a>
   </div>
   <p class="hero-signin">Already have an account? <a href="arelo_login.html">Sign in</a></p>
   <div class="scroll-hint">
     <span>SCROLL</span>
-    <svg width="16" height="20" viewBox="0 0 16 20" fill="none"><path d="M8 1v14M2 9l6 6 6-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <svg width="16" height="20" viewBox="0 0 16 20" fill="none"><path d="M8 1v14M2 9l6 6 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </div>
 </section>
 
 <!-- STRIP -->
 <div class="strip">
-  <div class="strip-stat">
-    <span class="strip-num">All in one</span>
-    <span class="strip-label">email, tasks &amp; life admin</span>
-  </div>
-  <div class="strip-div"></div>
   <div class="strip-stat">
     <span class="strip-num">Built to</span>
     <span class="strip-label">adapt as life changes</span>
@@ -388,11 +442,54 @@ footer {
   </div>
 </div>
 
+<!-- RECOGNITION -->
+<div class="section" id="recognition" style="padding-bottom:40px">
+  <h2 class="section-title">Life doesn't arrive<br>in one place.</h2>
+  <div class="recognition-row">
+    <span class="recognition-item">Email</span>
+    <span class="recognition-item">Messages</span>
+    <span class="recognition-item">School</span>
+    <span class="recognition-item">Work</span>
+    <span class="recognition-item">Calendar</span>
+    <span class="recognition-item">Letters &amp; documents</span>
+    <span class="recognition-item">Appointments</span>
+    <span class="recognition-item">Screenshots &amp; photos</span>
+    <span class="recognition-item">Things people tell you</span>
+    <span class="recognition-item">Things you remember</span>
+  </div>
+  <p class="section-sub" style="margin-top:32px;margin-bottom:0">Arelo brings the meaning together.</p>
+</div>
+
+<!-- TRANSFORMATION -->
+<div class="section" id="transformation" style="padding-top:20px;padding-bottom:60px">
+  <h2 class="section-title">From scattered<br>to understood.</h2>
+  <div class="transform-row">
+    <div class="transform-fragments">
+      <div class="fragment-card">🎒 School trip — consent needed</div>
+      <div class="fragment-card">💬 Fancy dinner Thursday?</div>
+      <div class="fragment-card">📅 Client review · Thu 4:30</div>
+      <div class="fragment-card">📦 Parcel — collection notice</div>
+      <div class="fragment-card">📝 Brownies cancelled tonight</div>
+    </div>
+    <div class="transform-arrow">→ Arelo →</div>
+    <div class="transform-result">
+      <div class="result-mock">
+        <div class="result-mock-label">Focus</div>
+        <div class="result-mock-title">The day, already understood.</div>
+        <div class="result-mock-line">✨ First, this needs sorting</div>
+        <div class="result-mock-line">Mia — Brownies cancelled tonight</div>
+        <div class="result-mock-line">Client review · Thu 4:30</div>
+      </div>
+    </div>
+  </div>
+  <p class="section-sub" style="margin-top:32px">The same understanding you can try yourself below.</p>
+</div>
+
 <!-- INTERACTIVE DEMO -->
-<div class="section" id="demo" style="padding-bottom:60px">
+<div class="section" id="demo" style="padding-top:0;padding-bottom:60px">
   <div class="section-label">See it for yourself</div>
-  <h2 class="section-title">Try the interactive demo</h2>
-  <p class="section-sub">Step through "Gemma's Week" — a guided, interactive demonstration of how Arelo works. See a cancelled Brownies session get quietly handled, and a client waiting on pricing followed up without anyone having to chase it.</p>
+  <h2 class="section-title">See Gemma's life, organised.</h2>
+  <p class="section-sub">Watch her chaos arrive, then see it become this. Step through "Gemma's Week" — a guided, interactive demonstration of how Arelo works. See a cancelled Brownies session get quietly handled, and a client waiting on pricing followed up without anyone having to chase it.</p>
   <div style="display:flex;justify-content:center">
     <a class="cta-primary" href="/demo" style="font-size:16px;padding:14px 32px;">Try the interactive demo</a>
   </div>
@@ -407,21 +504,21 @@ footer {
   <div class="steps">
     <div class="step-card">
       <div class="step-num">01</div>
-      <span class="step-icon">🔗</span>
-      <div class="step-title">Connect your inbox</div>
-      <p class="step-desc">Securely link your Gmail. Arelo reads your recent emails to understand your patterns — who matters, what's urgent, when you're quiet — and pulls out every action hiding in your threads.</p>
+      <span class="step-icon">📥</span>
+      <div class="step-title">Life comes at you from everywhere.</div>
+      <p class="step-desc">Email, messages, calendar, letters, things people tell you — life arrives in fragments.</p>
     </div>
     <div class="step-card">
       <div class="step-num">02</div>
       <span class="step-icon">🧠</span>
-      <div class="step-title">Add anything else</div>
-      <p class="step-desc">Not everything lives in email. Tell Arelo anything else that's on your mind — work projects, home admin, school forms, things you're waiting on — and it'll fold that in too.</p>
+      <div class="step-title">Arelo understands what it means.</div>
+      <p class="step-desc">What changed, what needs you, what can wait, what belongs together.</p>
     </div>
     <div class="step-card">
       <div class="step-num">03</div>
       <span class="step-icon">✅</span>
-      <div class="step-title">Act, don't search</div>
-      <p class="step-desc">Focus shows what needs your attention, organised around the parts of life that matter to you — not a fixed list — prioritised, explained, and calm. One thing at a time.</p>
+      <div class="step-title">You see what matters.</div>
+      <p class="step-desc">What needs your attention now, what's coming next — while the rest stays within reach.</p>
     </div>
   </div>
 </div>
@@ -473,8 +570,8 @@ footer {
 <!-- CTA -->
 <section class="cta-section">
   <div class="cta-glow"></div>
-  <h2 class="hero-title" style="position:relative;">Built to keep up<br><em>with your life.</em></h2>
-  <p class="hero-sub" style="position:relative;">Email, life admin, work projects, things you're waiting on — Arelo holds it all so you don't have to. Finally calm.</p>
+  <h2 class="hero-title" style="position:relative;">YOUR CHAOS —<br><em>ORGANISED.</em></h2>
+  <p class="hero-sub" style="position:relative;">What you need to deal with now. What's next. Arelo holds the rest.</p>
   <div class="hero-ctas" style="position:relative;">
     <a class="cta-primary" href="/coming-soon">Join the waiting list</a>
     <a class="cta-ghost" href="arelo_login.html">Sign in to your account</a>

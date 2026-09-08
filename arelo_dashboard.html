@@ -43,6 +43,56 @@ button,input,select{font:inherit}
 .panel.active{display:block}
 [hidden]{display:none!important}
 
+/* ===== Chaos-arrival intro (ARELO-319) — authored/static pre-roll only, no app state touched ===== */
+.chaos-intro{
+  position:fixed;inset:0;z-index:999;
+  background:#eef3f8;color:#17324d;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:28px;padding:24px;
+  transition:opacity .5s ease;
+}
+.chaos-intro[data-leaving]{opacity:0;pointer-events:none}
+.chaos-intro-disclaimer{
+  position:absolute;top:18px;left:50%;transform:translateX(-50%);
+  font-size:12.5px;color:#60758a;background:#fff;border:1px solid #d5e0e9;
+  border-radius:999px;padding:6px 16px;white-space:nowrap;
+}
+.chaos-intro-stage{
+  position:relative;width:min(560px,100%);min-height:220px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+}
+.chaos-frag{
+  background:#fff;border:1px solid #d5e0e9;border-radius:14px;
+  padding:11px 16px;font-size:14px;color:#3d5266;box-shadow:0 8px 20px rgba(28,55,81,.06);
+  opacity:0;transform:translateY(14px);
+  animation:chaosFragIn .6s ease forwards, chaosFragConverge .6s ease forwards;
+  animation-delay: var(--d), 3.1s;
+}
+.chaos-orb{
+  width:46px;height:46px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#fff 0%,#bfe9e2 30%,#0f8a7c 70%,#0b6459 100%);
+  box-shadow:0 0 24px rgba(15,138,124,.45);
+  opacity:0;animation:chaosOrbIn .6s ease 2.6s forwards;
+}
+.chaos-intro-caption{
+  font-family:'DM Serif Display',serif;font-size:clamp(22px,4vw,30px);
+  opacity:0;animation:chaosFragIn .6s ease 3.6s forwards;
+}
+.chaos-skip{
+  position:absolute;bottom:22px;right:24px;
+  background:transparent;border:1px solid #d5e0e9;color:#60758a;
+  font-size:13px;font-weight:700;padding:8px 16px;border-radius:999px;cursor:pointer;
+}
+.chaos-skip:hover{background:#fff;border-color:#0f8a7c;color:#0f8a7c}
+@keyframes chaosFragIn{ from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+@keyframes chaosFragConverge{ to{opacity:0;transform:translateY(-18px) scale(.92)} }
+@keyframes chaosOrbIn{ from{opacity:0;transform:scale(.6)} to{opacity:1;transform:scale(1)} }
+/* prefers-reduced-motion: no animation at all — intro is skipped via JS before first paint settles */
+@media (prefers-reduced-motion: reduce){
+  .chaos-frag,.chaos-orb,.chaos-intro-caption{ animation:none!important; opacity:1!important; transform:none!important }
+  .chaos-intro{ transition:none!important }
+}
+
 /* ============================================================= */
 /* FOCUS + CALENDAR — tokens/DOM lifted from arelo_focus_chroma_refined(1).html */
 /* ============================================================= */
@@ -530,6 +580,48 @@ button,input,select{font:inherit}
 </style>
 </head>
 <body>
+<!-- ===== Chaos-arrival intro (ARELO-319) — authored/static pre-roll. Plays once, then reveals the
+     existing dashboard below unchanged. Does not touch any Focus/Review/Pins/Calendar/Emails state. ===== -->
+<div id="chaosIntro" class="chaos-intro" role="region" aria-label="Animation: everyday messages, an email, a calendar item and other life admin arriving, then coming together into Arelo's organised Focus view">
+  <div class="chaos-intro-disclaimer">Interactive demo · not a live account</div>
+  <div class="chaos-intro-stage">
+    <div class="chaos-frag" style="--d:.1s">🎒 School trip — consent needed</div>
+    <div class="chaos-frag" style="--d:.7s">💬 Fancy dinner Thursday?</div>
+    <div class="chaos-frag" style="--d:1.3s">📅 Client review · Thu 4:30</div>
+    <div class="chaos-frag" style="--d:1.9s">📦 Parcel — collection notice</div>
+    <div class="chaos-frag" style="--d:2.5s">📝 Brownies cancelled tonight</div>
+    <div class="chaos-orb" aria-hidden="true"></div>
+    <div class="chaos-intro-caption">Your chaos — organised.</div>
+  </div>
+  <button type="button" class="chaos-skip" id="chaosSkip">Skip intro →</button>
+</div>
+<script>
+(function(){
+  var el = document.getElementById('chaosIntro');
+  if(!el) return;
+  var done = false;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function removeNow(){
+    if(done) return;
+    done = true;
+    if(el && el.parentNode) el.parentNode.removeChild(el);
+  }
+  function finishWithFade(){
+    if(done) return;
+    done = true;
+    el.setAttribute('data-leaving','');
+    window.setTimeout(function(){ if(el && el.parentNode) el.parentNode.removeChild(el); }, 550);
+  }
+  if(reduce){
+    // No animation at all, no exceptions — skip straight to the existing dashboard.
+    removeNow();
+  } else {
+    var skipBtn = document.getElementById('chaosSkip');
+    if(skipBtn) skipBtn.addEventListener('click', finishWithFade);
+    window.setTimeout(finishWithFade, 4600);
+  }
+})();
+</script>
 <div class="shell" id="app">
   <header class="topbar">
     <div class="brand">Arelo <span>· Gemma's week</span></div>
