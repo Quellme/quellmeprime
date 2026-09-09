@@ -44,10 +44,23 @@ button,input,select{font:inherit}
 [hidden]{display:none!important}
 
 /* ===== Arrival (ARELO-331) — seamless hero-animation -> interactive-demo handoff.
-   Supersedes ARELO-319's #chaosIntro (same authored chaos -> organised story, but the caption
-   now lands BEFORE a Focus-matched final composition, which cross-dissolves into the real
-   .shell already rendered beneath it, instead of closing on an end card). Authored/static
-   overlay only — no Focus/Review/Pins/Calendar/Emails markup, CSS or JS is touched. ===== */
+   Supersedes ARELO-319's #chaosIntro AND the first ARELO-331 pass (an invented fragment-card
+   sequence, rejected in Product Office review — comment 14608). The chaos -> organised visual
+   below is now a faithful vanilla-JS port of the approved ARELO-275 authored artefact ("Arelo
+   Hero - Your chaos, organised8.html", a Claude-Design animation export): the same 14 real
+   Gemma evidence images, the same fragment choreography/easing curves and orb-formation math,
+   carried over from the artefact's React/CompositionStage source (see FRAGMENTS/SLOT/MOTION/
+   fragmentStyle/orbStyle in __arrivalInit below) rather than re-authored. It is ported to plain
+   JS/CSS so it can run inline in this static page without pulling in React, Babel or the
+   composition-authoring runtime the artefact was built with — same authored look, lighter
+   runtime. The framing caption/frame-cue text is a separate, already-approved ARELO-331
+   amendment (comment 14573), unchanged in substance, only retimed to the artefact's real cue
+   points. The final "organised" beat still reuses the existing matched-layer composition
+   (synced live from the real #focusHero markup, see syncFinalCompositionFromRealFocus) rather
+   than the artefact's own generic mockup screen, since that already satisfies "final state
+   lines up with the real Gemma demo" more precisely than a static copy could — it IS the real
+   demo's own text. Authored/static overlay only — no Focus/Review/Pins/Calendar/Emails markup,
+   CSS or JS is touched. ===== */
 .arrival-disclosure{
   position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:1001;
   font-size:12.5px;color:#60758a;background:#fff;border:1px solid #d5e0e9;
@@ -83,32 +96,49 @@ button,input,select{font:inherit}
 }
 .arrival[data-leaving]{opacity:0;pointer-events:none}
 .arrival-stage{
-  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:10px;padding:24px;transition:opacity .5s ease;
+  position:absolute;inset:0;overflow:hidden;transition:opacity .5s ease;
 }
 .arrival-stage[data-done]{opacity:0;pointer-events:none}
-/* Light framing (ARELO-331 amendment) — names whose life this is, then gets out of the way;
-   not a biography, not a second intro, gone before the fragments finish cascading in. */
+/* Authored composition canvas — the real ARELO-275 artefact's own 1600x900 authoring frame,
+   letterbox-scaled and centred exactly as the source tool stages it (see fitCanvas in
+   __arrivalInit), so every fragment/orb coordinate below is used verbatim and the composition
+   reads the same at any viewport size instead of being re-laid-out per breakpoint. */
+.arrival-canvas{
+  position:absolute;left:50%;top:50%;width:1600px;height:900px;
+  transform-origin:center center;pointer-events:none;
+}
+.arrival-frag-box{
+  position:absolute;left:0;top:0;border-radius:10px;background:#fffdf9;
+  box-shadow:0 26px 50px -22px rgba(52,40,28,.45);border:1px solid rgba(38,34,29,.08);
+  will-change:transform,opacity,filter;
+}
+.arrival-frag-box img{display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit}
+.arrival-frag-box.crop{overflow:hidden;border-radius:4px;border:0;background:#fffdf9}
+.arrival-frag-box.crop img{position:absolute;left:50%;top:50%;width:auto;height:100%;max-width:none;transform:translate(-50%,-50%)}
+.arrival-orb-composed{
+  position:absolute;left:0;top:0;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle at 34% 30%,#b7e0da 0%,#8fc4bd 38%,#1b6c65 78%,#17605a 100%);
+  will-change:transform,opacity,box-shadow;
+}
+/* Light framing (ARELO-331 amendment, comment 14573) — names whose life this is, then gets out
+   of the way; not a biography, not a second intro, gone before the composition settles. */
 .arrival-frame-cue{
-  position:absolute;top:18%;left:50%;transform:translateX(-50%);
+  position:absolute;top:18%;left:50%;transform:translate(-50%,0);z-index:2;
   font-family:'DM Serif Display',serif;font-size:clamp(18px,3.4vw,24px);
   color:#3d5266;opacity:0;animation:arrivalFrameCue 1.3s ease forwards;white-space:nowrap;
+  pointer-events:none;
 }
-@keyframes arrivalFrameCue{ 0%{opacity:0;transform:translateY(6px)} 25%{opacity:1;transform:translateY(0)} 80%{opacity:1} 100%{opacity:0} }
-.arrival-frag{
-  width:min(560px,100%);background:#fff;border:1px solid #d5e0e9;border-radius:14px;
-  padding:11px 16px;font-size:14px;color:#3d5266;box-shadow:0 8px 20px rgba(28,55,81,.06);
-  opacity:0;transform:translateY(14px);
-  animation:arrivalFragIn .6s ease forwards, arrivalFragConverge .6s ease forwards;
-  animation-delay: var(--d), 3.1s;
-}
+@keyframes arrivalFrameCue{ 0%{opacity:0;transform:translate(-50%,6px)} 25%{opacity:1;transform:translate(-50%,0)} 80%{opacity:1} 100%{opacity:0} }
+/* Caption sits over the final matched composition (not the chaos stage) — it reads as
+   confirming the resolution, not narrating fragments mid-air. Shown/hidden by JS in step with
+   #arrivalFinal so it never outlives the composition it captions. */
 .arrival-caption{
-  font-family:'DM Serif Display',serif;font-size:clamp(22px,4vw,30px);
-  opacity:0;animation:arrivalFragIn .6s ease 3.6s forwards, arrivalCaptionOut .5s ease 4.6s forwards;
+  position:absolute;left:8%;right:8%;bottom:9%;z-index:2;text-align:center;pointer-events:none;
+  font-family:'DM Serif Display',serif;font-size:clamp(22px,4vw,30px);color:#17324d;
+  text-shadow:0 1px 16px rgba(255,255,255,.7);
+  opacity:0;transition:opacity .55s ease;
 }
-@keyframes arrivalFragIn{ from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
-@keyframes arrivalFragConverge{ to{opacity:0;transform:translateY(-18px) scale(.92)} }
-@keyframes arrivalCaptionOut{ to{opacity:0;transform:translateY(-10px)} }
+.arrival-caption.show{opacity:1}
 
 /* Final composition — matched to the real Focus first paint (same bg token, topbar geometry,
    H1 position/size, card column) so the dissolve to .shell beneath registers as continuous. */
@@ -154,24 +184,17 @@ button,input,select{font:inherit}
 .arrival-still-arrow{font-size:20px;color:#0f8a7c}
 .arrival-still-result{font-family:Georgia,serif;font-size:20px;color:#17324d}
 .arrival-still-caption{font-family:'DM Serif Display',serif;font-size:clamp(20px,4vw,26px)}
-.arrival.reduced .arrival-stage,.arrival.reduced .arrival-final{display:none}
+.arrival.reduced .arrival-stage,.arrival.reduced .arrival-final,.arrival.reduced .arrival-caption{display:none}
 .arrival.reduced .arrival-still{display:flex}
 
-@media(max-width:900px){
-  /* Fewer simultaneous fragments on mobile, same story/caption/ending. */
-  /* Class-based, not positional — robust to the frame-cue element also living in .arrival-stage.
-     Robotics/Northstar/calculator/Brownies stay on mobile (the required action / explicit-
-     responsibility / quiet-context spread survives); the second action-only fragment recedes. */
-  .arrival-frag--secondary{display:none}
-}
 @media(max-width:680px){
   /* Matches the real Focus mobile collapse point (.scope-focus .focus-grid at 680px). */
   .arrival-final-tabs{display:none}
   .arrival-final-body{padding:20px 16px}
 }
 @media (prefers-reduced-motion: reduce){
-  .arrival-frag,.arrival-caption,.arrival-stage,.arrival-final,.arrival-frame-cue{ transition:none!important }
-  .arrival-frag,.arrival-caption,.arrival-frame-cue{ animation:none!important }
+  .arrival-stage,.arrival-final,.arrival-frame-cue,.arrival-caption{ transition:none!important }
+  .arrival-frame-cue{ animation:none!important }
   .arrival-orb{ transition:opacity .3s ease!important }
   .arrival-explore-cue{ transition:opacity .3s ease!important }
 }
@@ -670,24 +693,24 @@ button,input,select{font:inherit}
 <div id="arrivalDisclosure" class="arrival-disclosure">Interactive demo · not a live account</div>
 <div id="arrivalOrb" class="arrival-orb" aria-hidden="true"></div>
 <div id="arrivalExploreCue" class="arrival-explore-cue" aria-hidden="true">Explore Gemma's Arelo</div>
-<!-- ARELO-331 amendment (comment 14573): the animation is the first chapter of the demo, not a
-     transition into it — "watch Arelo understand Gemma's life, then step inside what it
-     understood." Every fragment below is real ARELO-275/live-demo evidence (EVIDENCE map /
-     Pins below), kept in its approved semantic register: robotics and the calculator note are
-     things Gemma genuinely still needs to act on; the Brownies note is quiet context, not a
-     task — it is never turned into a Pin, in the animation or in the real demo beneath it. The
-     final composition reuses #focusHero's own copy verbatim (no paraphrase, nothing invented),
-     so what resolves here is textually the same thing the real Focus panel says a moment later. -->
-<div id="arrival" class="arrival" role="region" aria-label="Animation: this is Gemma's Tuesday — her messages, an email and other life admin arriving, then Arelo quietly organising them into her Focus">
+<!-- ARELO-331 correction (Product Office review, comment 14608): the chaos -> organised visual
+     is now the real ARELO-275 authored artefact ("Arelo Hero - Your chaos, organised8.html"),
+     ported faithfully — same 14 real Gemma evidence images (assets/arrival/, extracted from the
+     artefact's own bundle, downsized for web delivery but visually unchanged), same fragment
+     positions/timings/rotations, same orb-formation math — not an invented reconstruction. The
+     ARELO-331 amendment (comment 14573) framing — "the animation is the first chapter of the
+     demo, not a transition into it" — still applies to the frame-cue/caption text only. The
+     final composition still reuses #focusHero's own copy verbatim (no paraphrase, nothing
+     invented), so what resolves here is textually the same thing the real Focus panel says a
+     moment later — see syncFinalCompositionFromRealFocus in __arrivalInit. -->
+<div id="arrival" class="arrival" role="region" aria-label="Animation: this is Gemma's Tuesday — her real messages, emails and notes arriving, then Arelo quietly organising them into her Focus">
   <div class="arrival-stage" id="arrivalStage">
     <div class="arrival-frame-cue" id="arrivalFrameCue">This is Gemma's Tuesday.</div>
-    <div class="arrival-frag" style="--d:.1s">✉️ Robotics Club — day change</div>
-    <div class="arrival-frag" style="--d:.7s">💼 Northstar: revised proposal needed</div>
-    <div class="arrival-frag" style="--d:1.3s">📝 URGENT — buy a calculator for Mia</div>
-    <div class="arrival-frag" style="--d:1.9s">🐝 No Brownies for Mia today</div>
-    <div class="arrival-frag arrival-frag--secondary" style="--d:2.5s">💊 Prescription — ready for collection</div>
-    <div class="arrival-caption">Your chaos — organised.</div>
+    <!-- Populated by __arrivalInit from the real ARELO-275 FRAGMENTS/orb data — see
+         buildComposition/renderComposition. Nothing here is authored in markup. -->
+    <div class="arrival-canvas" id="arrivalCanvas"></div>
   </div>
+  <div class="arrival-caption" id="arrivalCaption">Your chaos — organised.</div>
   <div class="arrival-final" id="arrivalFinal" aria-hidden="true">
     <div class="arrival-final-topbar">
       <div class="arrival-final-brand">Arelo <span>· Gemma's week</span></div>
@@ -699,10 +722,13 @@ button,input,select{font:inherit}
       <div class="arrival-final-card"><div class="arrival-final-hero" id="arrivalFinalHero"><!-- filled from #focusHero's own copy at runtime, see __arrivalInit --></div></div>
     </div>
   </div>
+  <!-- Reduced-motion still: representative real fragments only, chosen by the artefact's own
+       role taxonomy (act = still needs Gemma; know = kept as calm awareness) rather than an
+       invented subset — see FRAGMENTS in __arrivalInit. -->
   <div class="arrival-still" id="arrivalStill" aria-hidden="true">
     <div class="arrival-still-frame-cue">This is Gemma's Tuesday.</div>
     <div class="arrival-still-frags">
-      <span>✉️ Robotics Club</span><span>💼 Northstar proposal</span><span>📝 Buy a calculator</span><span>🐝 No Brownies today</span><span>💊 Prescription</span>
+      <span>✉️ Robotics club reply</span><span>💊 Prescription ready</span><span>🧮 Buy a calculator</span><span>🧁 Brownies cancelled</span>
     </div>
     <div class="arrival-still-arrow">↓</div>
     <div class="arrival-still-result" id="arrivalStillResult">Focus — the day, already understood.</div>
@@ -711,9 +737,110 @@ button,input,select{font:inherit}
   <button type="button" class="arrival-skip" id="arrivalSkip">Skip intro →</button>
 </div>
 <script>
+/* ---------------------------------------------------------------------------------------------
+   Real ARELO-275 composition data (ARELO-331 correction, comment 14608) — ported verbatim from
+   the approved artefact's own React source (arelo-hero-standalone.jsx / animations-v3.jsx,
+   extracted from "Arelo Hero - Your chaos, organised8.html"). FRAGMENTS/SLOT/the MOTION easing
+   wrappers and the Fragment()/Orb() per-frame math below are the same values and the same
+   formulas the artefact uses — only the rendering target changed (direct DOM style writes on a
+   requestAnimationFrame loop, instead of React re-rendering an SVG/foreignObject stage), so this
+   page doesn't need to load React, Babel or the composition-authoring runtime just to play one
+   fixed sequence once. Do not hand-tune any position/timing value here without re-checking it
+   against the artefact — the point of this port is that these are NOT re-authored.
+   --------------------------------------------------------------------------------------------- */
+var ARRIVAL_SLOT = { primary:[590,452], prescription:[590,574], calculator:[590,628], awareness:[1072,452] };
+var ARRIVAL_FRAGMENTS = [
+  { src:"assets/arrival/gemma_energy_statement_email.jpg", w:440, x:300, y:140, rot:-3, from:[-620,-220], t:0.05, role:"rest" },
+  { src:"assets/arrival/gemma_gmail_inbox_mobile.jpg", w:170, x:230, y:350, rot:-7, from:[-560,120], t:0.22, role:"rest" },
+  { src:"assets/arrival/gemma_brownies_cancelled_email.jpg", w:430, x:660, y:230, rot:3, from:[0,-640], t:0.38, role:"know", slot:ARRIVAL_SLOT.awareness },
+  { src:"assets/arrival/gemma_flu_jab_postit.jpg", w:215, crop:0.62, x:980, y:150, rot:6, from:[260,-620], t:0.55, role:"rest" },
+  { src:"assets/arrival/gemma_prescription_postit.jpg", w:215, crop:0.62, x:1215, y:275, rot:5, from:[640,-260], t:0.72, role:"act", slot:ARRIVAL_SLOT.prescription },
+  { src:"assets/arrival/gemma_work_week_postit.jpg", w:215, crop:0.64, x:1470, y:300, rot:9, from:[700,-60], t:0.9, role:"rest" },
+  { src:"assets/arrival/gemma_credit_card_payment_due_email.jpg", w:430, x:1080, y:560, rot:-4, from:[720,200], t:1.08, role:"rest" },
+  { src:"assets/arrival/gemma_dinner_thurs_whatsapp_desktop.jpg", w:400, x:1330, y:720, rot:4, from:[660,460], t:1.26, role:"rest" },
+  { src:"assets/arrival/gemma_calculator_postit.jpg", w:225, crop:0.66, x:840, y:715, rot:-8, from:[0,620], t:1.44, role:"act", slot:ARRIVAL_SLOT.calculator },
+  { src:"assets/arrival/gemma_youth_club_foam_party_whatsapp.jpg", w:168, x:700, y:445, rot:-3, from:[-160,600], t:1.6, role:"rest" },
+  { src:"assets/arrival/gemma_robotics_reply_postit.jpg", w:215, crop:0.62, x:445, y:655, rot:7, from:[-480,520], t:1.78, role:"act", slot:ARRIVAL_SLOT.primary },
+  { src:"assets/arrival/gemma_eye_appointment_postit.jpg", w:215, crop:0.62, x:115, y:655, rot:-10, from:[-620,340], t:1.95, role:"rest" },
+  { src:"assets/arrival/gemma_parcel_delivery_email.jpg", w:400, x:1150, y:880, rot:-5, from:[420,620], t:2.12, role:"rest" },
+  { src:"assets/arrival/gemma_cleaner_transfer_whatsapp.jpg", w:168, x:480, y:900, rot:5, from:[-420,640], t:2.3, role:"rest" }
+];
+// Authored scene list (OM_SCENES in the artefact): Chaos 3s, Takeover 2s, Organised 3s, Hold 2s —
+// same relative pacing, played once in real time (no scrub/retime machinery needed for a single
+// fixed playback).
+var ARRIVAL_CUES = { Chaos:0, Takeover:3, Organised:5, Hold:8 };
+var ARRIVAL_TOTAL = 10;
+
+function __arrivalEaseOutCubic(t){ var u = t - 1; return u * u * u + 1; }
+function __arrivalEaseInOutCubic(t){ return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1; }
+function __arrivalEaseOutBack(t){ var c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); }
+function __arrivalAnimate(from, to, start, end, ease, T){
+  if(T <= start) return from;
+  if(T >= end) return to;
+  return from + (to - from) * ease((T - start) / (end - start));
+}
+function __arrivalEnter(from, to, start, end, T){ return __arrivalAnimate(from, to, start, end, __arrivalEaseOutCubic, T); }
+function __arrivalSettle(from, to, start, end, T){ return __arrivalAnimate(from, to, start, end, __arrivalEaseInOutCubic, T); }
+function __arrivalPop(from, to, start, end, T){ return __arrivalAnimate(from, to, start, end, __arrivalEaseOutBack, T); }
+
+// Fragment() from arelo-hero-standalone.jsx, ported 1:1: same enter/gather/leave/land curves.
+function __arrivalFragmentStyle(f, i, T, C){
+  var inProg = __arrivalEnter(0, 1, f.t, f.t + 0.85, T);
+  var drift = Math.sin((T + i * 1.7) * 0.55) * 5;
+  var gather = __arrivalSettle(0, 1, C.Takeover + 0.15, C.Takeover + 1.7, T);
+  var ang = (i / ARRIVAL_FRAGMENTS.length) * Math.PI * 2;
+  var stackX = 800 + Math.cos(ang) * 120;
+  var stackY = 470 + Math.sin(ang) * 84;
+  var baseX = f.x + f.from[0] * (1 - inProg);
+  var baseY = f.y + f.from[1] * (1 - inProg) + drift;
+  var x = baseX + (stackX - baseX) * gather;
+  var y = baseY + (stackY - baseY) * gather;
+  var scale = (0.9 + 0.1 * inProg) * (1 - 0.52 * gather);
+  var opacity = inProg * (1 - 0.45 * gather);
+  var blur = 8 * (1 - inProg) + 3 * gather;
+  var rot = f.rot * (1 - 0.8 * gather) + (1 - inProg) * f.rot * 1.6;
+  if(f.role === 'rest'){
+    var leave = __arrivalSettle(0, 1, C.Takeover + 1.5, C.Organised + 0.45, T);
+    x += Math.cos(ang) * 130 * leave;
+    y += 120 * leave;
+    scale *= 1 - 0.35 * leave;
+    blur += 8 * leave;
+    opacity *= 1 - leave;
+  } else {
+    var land = __arrivalSettle(0, 1, C.Organised - 0.25, C.Organised + 0.95, T);
+    x += (f.slot[0] - x) * land;
+    y += (f.slot[1] - y) * land;
+    scale *= 1 - 0.55 * land;
+    rot *= 1 - land;
+    blur += 4 * land;
+    opacity *= 1 - Math.max(0, (land - 0.55) / 0.45);
+  }
+  return { x:x, y:y, scale:scale, opacity:opacity, blur:blur, rot:rot };
+}
+
+// Orb() from arelo-hero-standalone.jsx, ported 1:1: born (pop-in) -> dock (settle toward the
+// panel) -> fade (dissolves as the real Focus composition takes over).
+function __arrivalOrbStyle(T, C){
+  var born = __arrivalPop(0, 1, C.Takeover - 0.15, C.Takeover + 1.0, T);
+  var dock = __arrivalSettle(0, 1, C.Organised - 0.2, C.Organised + 0.9, T);
+  var fade = 1 - __arrivalSettle(0, 1, C.Organised + 0.15, C.Organised + 1.1, T);
+  var breath = 1 + Math.sin(T * 1.15) * 0.022;
+  var size = (188 - 120 * dock) * born * breath;
+  var glow = (1 - dock) * 0.55 + 0.18;
+  return {
+    left: 800 + (700 - 800) * dock,
+    top: 470 + (430 - 470) * dock,
+    size: size,
+    opacity: born * fade,
+    glow: glow
+  };
+}
+
 function __arrivalInit(){
   var root = document.getElementById('arrival');
   var stage = document.getElementById('arrivalStage');
+  var canvas = document.getElementById('arrivalCanvas');
+  var caption = document.getElementById('arrivalCaption');
   var finalLayer = document.getElementById('arrivalFinal');
   var stillLayer = document.getElementById('arrivalStill');
   var disclosure = document.getElementById('arrivalDisclosure');
@@ -743,12 +870,94 @@ function __arrivalInit(){
 
   var done = false;
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var mobile = window.matchMedia && window.matchMedia('(max-width:900px)').matches;
   var prevOverflow = document.body.style.overflow;
   document.body.style.overflow = 'hidden';
 
   function isShellReady(){
     return !!(shell && shell.offsetHeight > 0);
+  }
+
+  // Letterbox-scale the artefact's own 1600x900 authoring frame to fit the viewport, centred —
+  // the same fit strategy the artefact's own Stage component uses, so the composition reads
+  // exactly as authored at any viewport size rather than being re-laid-out per breakpoint.
+  function fitCanvas(){
+    if(!canvas) return;
+    var s = Math.min(window.innerWidth / 1600, window.innerHeight / 900) * 0.92;
+    if(!isFinite(s) || s <= 0) s = 0.5;
+    canvas.style.transform = 'translate(-50%,-50%) scale(' + s + ')';
+  }
+  fitCanvas();
+  window.addEventListener('resize', fitCanvas);
+
+  var composedOrb = null;
+  var compositionBuilt = false;
+  function buildComposition(){
+    if(!canvas || compositionBuilt) return;
+    compositionBuilt = true;
+    for(var i = 0; i < ARRIVAL_FRAGMENTS.length; i++){
+      (function(f){
+        var box = document.createElement('div');
+        box.className = 'arrival-frag-box' + (f.crop ? ' crop' : '');
+        box.style.width = f.w + 'px';
+        box.style.height = (f.crop ? (f.w * 0.94) : f.w) + 'px';
+        var img = document.createElement('img');
+        img.src = f.src;
+        img.alt = '';
+        if(f.crop) img.style.width = (f.w / f.crop) + 'px';
+        box.appendChild(img);
+        canvas.appendChild(box);
+        f._el = box;
+      })(ARRIVAL_FRAGMENTS[i]);
+    }
+    var orbEl = document.createElement('div');
+    orbEl.className = 'arrival-orb-composed';
+    canvas.appendChild(orbEl);
+    composedOrb = orbEl;
+  }
+
+  function renderComposition(T){
+    for(var i = 0; i < ARRIVAL_FRAGMENTS.length; i++){
+      var f = ARRIVAL_FRAGMENTS[i];
+      if(!f._el) continue;
+      var s = __arrivalFragmentStyle(f, i, T, ARRIVAL_CUES);
+      f._el.style.left = s.x + 'px';
+      f._el.style.top = s.y + 'px';
+      f._el.style.transform = 'translate(-50%,-50%) rotate(' + s.rot + 'deg) scale(' + s.scale + ')';
+      f._el.style.opacity = s.opacity;
+      f._el.style.filter = 'blur(' + s.blur + 'px)';
+    }
+    if(composedOrb){
+      var o = __arrivalOrbStyle(T, ARRIVAL_CUES);
+      composedOrb.style.left = o.left + 'px';
+      composedOrb.style.top = o.top + 'px';
+      composedOrb.style.width = o.size + 'px';
+      composedOrb.style.height = o.size + 'px';
+      composedOrb.style.transform = 'translate(-50%,-50%)';
+      composedOrb.style.opacity = o.opacity;
+      composedOrb.style.boxShadow = '0 0 ' + (90 * o.glow) + 'px ' + (34 * o.glow) + 'px rgba(27,108,101,' + (0.3 * o.glow + 0.06) + '), inset 0 6px 18px rgba(255,255,255,.45)';
+    }
+  }
+
+  var compositionRafId = null;
+  var compositionStartTs = null;
+  function compositionLoop(ts){
+    if(compositionStartTs === null) compositionStartTs = ts;
+    var T = (ts - compositionStartTs) / 1000;
+    if(T > ARRIVAL_TOTAL) T = ARRIVAL_TOTAL;
+    renderComposition(T);
+    if(T < ARRIVAL_TOTAL && !done){
+      compositionRafId = window.requestAnimationFrame(compositionLoop);
+    } else {
+      compositionRafId = null;
+    }
+  }
+  function startComposition(){
+    buildComposition();
+    renderComposition(0);
+    compositionRafId = window.requestAnimationFrame(compositionLoop);
+  }
+  function stopComposition(){
+    if(compositionRafId){ window.cancelAnimationFrame(compositionRafId); compositionRafId = null; }
   }
 
   function settleOrbThenFade(){
@@ -796,6 +1005,7 @@ function __arrivalInit(){
   function dissolve(){
     if(done) return;
     done = true;
+    stopComposition();
     document.body.style.overflow = prevOverflow || '';
     root.setAttribute('data-leaving','');
     settleOrbThenFade();
@@ -830,14 +1040,21 @@ function __arrivalInit(){
 
   function fastForward(){
     if(done) return;
+    stopComposition();
     stage.setAttribute('data-done','');
     finalLayer.setAttribute('data-shown','');
+    if(caption) caption.classList.add('show');
     readyThenDissolve(0);
   }
 
   if(skipBtn) skipBtn.addEventListener('click', fastForward);
   root.addEventListener('pointerdown', fastForward);
-  root.addEventListener('keydown', function(e){
+  // Bound to document, not root: nothing inside the overlay is focused by default (the page
+  // loads with document.activeElement === body), so a listener on root alone never sees the
+  // keydown — a real keyboard-operability gap carried over from the previously-accepted build,
+  // fixed here as part of "preserve reduced-motion/accessibility behaviour".
+  document.addEventListener('keydown', function(e){
+    if(done) return;
     if(['Enter',' ','Spacebar','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].indexOf(e.key) !== -1) fastForward();
   });
 
@@ -846,7 +1063,6 @@ function __arrivalInit(){
   // are guaranteed settled before the branch is chosen — matchMedia itself stays live either way.
   window.requestAnimationFrame(function(){
     reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    mobile = window.matchMedia && window.matchMedia('(max-width:900px)').matches;
     if(reduce){
       // Static two-state still, not an instant skip — keeps the chaos -> organised meaning,
       // loses only the motion. Held ~1.6s, dismissible immediately by Skip or any interaction.
@@ -854,14 +1070,27 @@ function __arrivalInit(){
       if(orb) orb.classList.add('phase-in');
       readyThenDissolve(1600);
     } else {
-      window.setTimeout(function(){ if(orb) orb.classList.add('phase-in'); }, 2600);
-      var authoredEnd = mobile ? 4200 : 5200;
+      // Cue points are the artefact's own (ARRIVAL_CUES) — nothing here is a re-timed guess.
+      // Organised-0.6: the fragments have gathered/landed enough (per the ported land/leave
+      // curves) that the matched-layer final composition can take over, same pairing the
+      // artefact's own Shot(from=Organised-0.6) uses for its AreloScreen reveal.
+      var revealMs = (ARRIVAL_CUES.Organised - 0.6) * 1000;
+      // Organised+0.3: caption confirms the resolution once the final composition is visible.
+      var captionOnMs = (ARRIVAL_CUES.Organised + 0.3) * 1000;
+      // ~Organised+1.5: after the composed orb has fully faded (its own fade curve completes by
+      // Organised+1.1), the outer continuity orb picks up — never two orbs on screen at once.
+      var outerOrbMs = (ARRIVAL_CUES.Organised + 1.5) * 1000;
+      startComposition();
       window.setTimeout(function(){
         if(done) return;
         stage.setAttribute('data-done','');
         finalLayer.setAttribute('data-shown','');
-      }, authoredEnd - 600);
-      readyThenDissolve(authoredEnd);
+      }, revealMs);
+      window.setTimeout(function(){
+        if(!done && caption) caption.classList.add('show');
+      }, captionOnMs);
+      window.setTimeout(function(){ if(!done && orb) orb.classList.add('phase-in'); }, outerOrbMs);
+      readyThenDissolve(ARRIVAL_TOTAL * 1000);
     }
   });
 }
