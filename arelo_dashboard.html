@@ -304,6 +304,10 @@ button,input,select{font:inherit}
 .scope-focus .keep-toggle[aria-expanded="true"] svg{transform:rotate(180deg)}
 .scope-focus .keep-list{display:none}
 .scope-focus .keep-list.open{display:block}
+.scope-focus .keep-day-group+.keep-day-group{margin-top:6px}
+.scope-focus .keep-day-label{padding:6px 0 2px 8px;font-size:9.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.scope-focus .keep-seeall{display:block;width:100%;text-align:left;margin-top:8px;padding:6px 0 2px 8px;border:0;background:transparent;color:var(--muted);font-size:11px;font-weight:800;cursor:pointer}
+.scope-focus .keep-seeall:hover{color:var(--accent);text-decoration:underline}
 
 .scope-focus .day-card{background:var(--card);border-radius:var(--radius-lg);padding:16px;border:1px solid var(--line);margin-bottom:12px}
 .scope-focus .day-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:4px}
@@ -1644,6 +1648,38 @@ function buildPins(){
 /* =========================================================================
    RENDER: FOCUS
    ========================================================================= */
+/* ARELO-335 — Focus "Keeping within reach" is the immediate horizon (tomorrow, optionally the
+   day after), never a second Pins inventory. The demo's fixed "today" is Tuesday 8 September —
+   the same literal date already used for the arrival hand-off meta and the day-thermometer
+   (search "Tuesday 8 September"), so this reuses that anchor rather than inventing a new one.
+   A Pin's own `remind` text is the only place a specific calendar date is stated (e.g. "Wed 9
+   September", "Thu 10 September — the afternoon before"); `need` is often a relative deadline
+   ("Before Thursday's 1:1") rather than a date, so `remind` is the correct field to read a Pin's
+   date from. Pins with no explicit weekday+day-of-month in `remind` (the vast majority — "Next
+   week", "Later", vague relative text) simply have no near-horizon date and are correctly held
+   in Pins only. */
+var DEMO_TODAY_DAY = 8; // September — Tuesday, matches the literal date used elsewhere in this file
+var WEEKDAY_FULL = {Mon:'Monday',Tue:'Tuesday',Wed:'Wednesday',Thu:'Thursday',Fri:'Friday',Sat:'Saturday',Sun:'Sunday'};
+function pinRemindDate(p){
+  const m = /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\w*\s+(\d{1,2})\s+September\b/.exec(p.remind || '');
+  if(!m) return null;
+  return { day: parseInt(m[2], 10), weekday: WEEKDAY_FULL[m[1]] || m[1] };
+}
+// Given the full "still open, not sleeping, not today" Pins list, returns only tomorrow's and
+// (when it genuinely has something) the day-after's Pins, grouped for display — never padded
+// with anything further out. This is presentation/selection only: Pin data, dates, categories
+// and completion behaviour are untouched.
+function nearHorizonGroups(restPins){
+  const tomorrowDay = DEMO_TODAY_DAY + 1, dayAfterDay = DEMO_TODAY_DAY + 2;
+  const dated = restPins.map(p=>({p, d:pinRemindDate(p)})).filter(x=>x.d);
+  const tomorrow = dated.filter(x=>x.d.day===tomorrowDay).map(x=>x.p);
+  const dayAfter = dated.filter(x=>x.d.day===dayAfterDay).map(x=>x.p);
+  const groups = [];
+  if(tomorrow.length) groups.push({ label:'Tomorrow', pins:tomorrow });
+  if(dayAfter.length) groups.push({ label: (dated.find(x=>x.d.day===dayAfterDay)||{}).d.weekday || 'The following day', pins:dayAfter });
+  return groups;
+}
+
 function renderFocus(){
   const hero = document.getElementById('focusHero');
   const clashLines = [];
@@ -1696,12 +1732,24 @@ function renderFocus(){
       <button class="pin-check" type="button" data-done="${p.id}">${p.lifecycle==='Done'?'✓':'✓'}</button>
       <div class="pin-detail">${p.summary}<br><span class="story-link">Next: ${p.na} · Needed by: ${p.need}</span><span class="pin-context">${p.source? 'From evidence' : 'Ongoing'}</span></div>
     </div>`;
+  // ARELO-335: "Keeping within reach" shows only the immediate horizon (tomorrow, and the day
+  // after when it has something genuinely near-term) — never the full `rest` inventory, and
+  // never a count of how much else Arelo is quietly holding. Everything beyond that horizon
+  // stays exactly where it always was: in Pins, reachable via the quiet link below.
+  const horizonGroups = nearHorizonGroups(rest);
+  const shownIds = new Set(horizonGroups.reduce((ids,g)=>ids.concat(g.pins.map(p=>p.id)), []));
+  const hasMorePins = rest.length > shownIds.size;
+  const keepWrapHtml = !horizonGroups.length ? '' : `
+    <div class="keep-wrap"><button class="keep-toggle" id="keepToggle" type="button" aria-expanded="${state._keepOpen?'true':'false'}"><span>Keeping within reach</span>
+      <span class="chev-chip"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+      <div class="keep-list${state._keepOpen?' open':''}">
+        ${horizonGroups.map(g=>`<div class="keep-day-group"><div class="keep-day-label">${g.label}</div>${g.pins.map(pinLine).join('')}</div>`).join('')}
+        ${hasMorePins ? '<button class="keep-seeall" id="keepSeeAll" type="button">See all Pins →</button>' : ''}
+      </div>
+    </div>`;
   document.getElementById('focusPins').innerHTML = `
     ${now.map(pinLine).join('') || '<div style="padding:8px;color:#8ea0af;font-size:12.5px">Nothing else needs you right this moment.</div>'}
-    <div class="keep-wrap"><button class="keep-toggle" id="keepToggle" type="button" aria-expanded="${state._keepOpen?'true':'false'}"><span>Keeping within reach · ${rest.length}</span>
-      <span class="chev-chip"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
-      <div class="keep-list${state._keepOpen?' open':''}">${rest.map(pinLine).join('') || '<div style="padding:6px;color:#8ea0af;font-size:12px">Nothing else waiting.</div>'}</div>
-    </div>`;
+    ${keepWrapHtml}`;
 
   document.getElementById('browniesFyi').innerHTML = `<strong>No Brownies for Mia today.</strong> Not running this week — back to normal next week.`;
 
@@ -2373,6 +2421,8 @@ document.getElementById('app').addEventListener('click', e=>{
   if(dayToggle){ const open = document.getElementById('dayDetails').classList.toggle('open'); dayToggle.setAttribute('aria-expanded', open?'true':'false'); return; }
   const keepToggle = e.target.closest('#keepToggle');
   if(keepToggle){ state._keepOpen = !state._keepOpen; renderFocus(); return; }
+  const keepSeeAll = e.target.closest('#keepSeeAll');
+  if(keepSeeAll){ switchTab('pins'); return; }
   const expandBtn = e.target.closest('[data-expand]');
   if(expandBtn){ const id = expandBtn.dataset.expand; state._expandedFocus = state._expandedFocus===id? null : id; renderFocus(); return; }
   const doneBtn = e.target.closest('[data-done]');
