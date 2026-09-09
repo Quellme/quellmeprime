@@ -43,54 +43,137 @@ button,input,select{font:inherit}
 .panel.active{display:block}
 [hidden]{display:none!important}
 
-/* ===== Chaos-arrival intro (ARELO-319) — authored/static pre-roll only, no app state touched ===== */
-.chaos-intro{
-  position:fixed;inset:0;z-index:999;
-  background:#eef3f8;color:#17324d;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:28px;padding:24px;
-  transition:opacity .5s ease;
-}
-.chaos-intro[data-leaving]{opacity:0;pointer-events:none}
-.chaos-intro-disclaimer{
-  position:absolute;top:18px;left:50%;transform:translateX(-50%);
+/* ===== Arrival (ARELO-331) — seamless hero-animation -> interactive-demo handoff.
+   Supersedes ARELO-319's #chaosIntro (same authored chaos -> organised story, but the caption
+   now lands BEFORE a Focus-matched final composition, which cross-dissolves into the real
+   .shell already rendered beneath it, instead of closing on an end card). Authored/static
+   overlay only — no Focus/Review/Pins/Calendar/Emails markup, CSS or JS is touched. ===== */
+.arrival-disclosure{
+  position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:1001;
   font-size:12.5px;color:#60758a;background:#fff;border:1px solid #d5e0e9;
   border-radius:999px;padding:6px 16px;white-space:nowrap;
+  transition:opacity .45s ease;
 }
-.chaos-intro-stage{
-  position:relative;width:min(560px,100%);min-height:220px;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
-}
-.chaos-frag{
-  background:#fff;border:1px solid #d5e0e9;border-radius:14px;
-  padding:11px 16px;font-size:14px;color:#3d5266;box-shadow:0 8px 20px rgba(28,55,81,.06);
-  opacity:0;transform:translateY(14px);
-  animation:chaosFragIn .6s ease forwards, chaosFragConverge .6s ease forwards;
-  animation-delay: var(--d), 3.1s;
-}
-.chaos-orb{
+.arrival-disclosure[data-fade]{opacity:0}
+.arrival-orb{
+  position:fixed;top:50%;left:50%;margin:-23px 0 0 -23px;z-index:1000;pointer-events:none;
   width:46px;height:46px;border-radius:50%;
   background:radial-gradient(circle at 35% 35%,#fff 0%,#bfe9e2 30%,#0f8a7c 70%,#0b6459 100%);
   box-shadow:0 0 24px rgba(15,138,124,.45);
-  opacity:0;animation:chaosOrbIn .6s ease 2.6s forwards;
+  opacity:0;transition:opacity .6s ease,top .8s ease,left .8s ease;
 }
-.chaos-intro-caption{
+.arrival-orb.phase-in{opacity:1}
+/* Settle position is set inline from a live measurement of the real topbar (see
+   settleOrbThenFade) so it never collides with tab/meta text at any breakpoint;
+   this is a same-viewport fallback only, in case that measurement isn't available. */
+.arrival-orb.phase-settle{top:26px;left:calc(100% - 49px)}
+.arrival-orb.phase-fade{opacity:0}
+/* Post-handoff cue (ARELO-331 amendment): permission/context, not an interstitial — never
+   intercepts a click, never blocks interaction, and disappears on its own. */
+.arrival-explore-cue{
+  position:fixed;top:66px;left:50%;transform:translateX(-50%);z-index:998;pointer-events:none;
+  font-family:'DM Serif Display',serif;font-size:15px;color:#3d5266;
+  background:rgba(255,255,255,.9);border-radius:999px;padding:5px 14px;white-space:nowrap;
+  opacity:0;transition:opacity .6s ease;
+}
+.arrival-explore-cue.show{opacity:1}
+.arrival{
+  position:fixed;inset:0;z-index:999;background:#eef3f8;color:#17324d;
+  overflow:hidden;transition:opacity .55s ease;
+}
+.arrival[data-leaving]{opacity:0;pointer-events:none}
+.arrival-stage{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;padding:24px;transition:opacity .5s ease;
+}
+.arrival-stage[data-done]{opacity:0;pointer-events:none}
+/* Light framing (ARELO-331 amendment) — names whose life this is, then gets out of the way;
+   not a biography, not a second intro, gone before the fragments finish cascading in. */
+.arrival-frame-cue{
+  position:absolute;top:18%;left:50%;transform:translateX(-50%);
+  font-family:'DM Serif Display',serif;font-size:clamp(18px,3.4vw,24px);
+  color:#3d5266;opacity:0;animation:arrivalFrameCue 1.3s ease forwards;white-space:nowrap;
+}
+@keyframes arrivalFrameCue{ 0%{opacity:0;transform:translateY(6px)} 25%{opacity:1;transform:translateY(0)} 80%{opacity:1} 100%{opacity:0} }
+.arrival-frag{
+  width:min(560px,100%);background:#fff;border:1px solid #d5e0e9;border-radius:14px;
+  padding:11px 16px;font-size:14px;color:#3d5266;box-shadow:0 8px 20px rgba(28,55,81,.06);
+  opacity:0;transform:translateY(14px);
+  animation:arrivalFragIn .6s ease forwards, arrivalFragConverge .6s ease forwards;
+  animation-delay: var(--d), 3.1s;
+}
+.arrival-caption{
   font-family:'DM Serif Display',serif;font-size:clamp(22px,4vw,30px);
-  opacity:0;animation:chaosFragIn .6s ease 3.6s forwards;
+  opacity:0;animation:arrivalFragIn .6s ease 3.6s forwards, arrivalCaptionOut .5s ease 4.6s forwards;
 }
-.chaos-skip{
-  position:absolute;bottom:22px;right:24px;
+@keyframes arrivalFragIn{ from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+@keyframes arrivalFragConverge{ to{opacity:0;transform:translateY(-18px) scale(.92)} }
+@keyframes arrivalCaptionOut{ to{opacity:0;transform:translateY(-10px)} }
+
+/* Final composition — matched to the real Focus first paint (same bg token, topbar geometry,
+   H1 position/size, card column) so the dissolve to .shell beneath registers as continuous. */
+.arrival-final{position:absolute;inset:0;opacity:0;transition:opacity .5s ease}
+.arrival-final[data-shown]{opacity:1}
+.arrival-final-topbar{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:16px 22px;background:#fff;border-bottom:1px solid #d5e0e9;
+}
+.arrival-final-brand{font-family:Georgia,"Times New Roman",serif;font-size:19px;font-weight:700;color:#17324d}
+.arrival-final-brand span{color:#2d6f67}
+.arrival-final-tabs{display:flex;gap:4px}
+.arrival-final-tabs span{padding:9px 14px;border-radius:999px;font-weight:700;font-size:13.5px;color:#60758a}
+.arrival-final-tabs span.on{background:#17324d;color:#fff}
+.arrival-final-meta{font-size:12.5px;color:#60758a}
+.arrival-final-body{max-width:1120px;margin:0 auto;padding:26px 22px}
+.arrival-final-head h2{font-family:Georgia,"Times New Roman",serif;margin:0 0 5px;font-size:28px;letter-spacing:-.02em}
+.arrival-final-head p{margin:0 0 18px;color:#60758a}
+.arrival-final-card{background:rgba(255,255,255,.28);border:1px solid #d5e0e9;border-radius:28px;padding:22px}
+.arrival-final-hero{
+  background:linear-gradient(165deg,#ffffff 0%,#f7fafc 100%);border-radius:24px;padding:26px 28px;
+  box-shadow:0 12px 30px rgba(28,55,81,.08);min-height:64px;color:#17324d;
+}
+/* Typography for the real #focusHero markup copied in verbatim (h2/.lead/p) — .scope-focus's
+   own rules don't reach here since this sits outside that scope. */
+.arrival-final-hero h2{font-family:Georgia,"Times New Roman",serif;font-size:26px;margin:0 0 10px}
+.arrival-final-hero p{margin:5px 0;color:#60758a;font-size:14px}
+.arrival-final-hero .lead{color:#17324d;font-size:17px}
+
+.arrival-skip{
+  position:absolute;bottom:22px;right:24px;z-index:2;
   background:transparent;border:1px solid #d5e0e9;color:#60758a;
   font-size:13px;font-weight:700;padding:8px 16px;border-radius:999px;cursor:pointer;
 }
-.chaos-skip:hover{background:#fff;border-color:#0f8a7c;color:#0f8a7c}
-@keyframes chaosFragIn{ from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
-@keyframes chaosFragConverge{ to{opacity:0;transform:translateY(-18px) scale(.92)} }
-@keyframes chaosOrbIn{ from{opacity:0;transform:scale(.6)} to{opacity:1;transform:scale(1)} }
-/* prefers-reduced-motion: no animation at all — intro is skipped via JS before first paint settles */
+.arrival-skip:hover{background:#fff;border-color:#0f8a7c;color:#0f8a7c}
+
+/* Reduced-motion route: a static two-state still (fragments -> result), not an instant skip —
+   keeps the chaos -> organised meaning without any motion. */
+.arrival-still{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;text-align:center}
+.arrival-still-frame-cue{font-family:'DM Serif Display',serif;font-size:clamp(16px,3vw,20px);color:#3d5266}
+.arrival-still-frags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:560px}
+.arrival-still-frags span{background:#fff;border:1px solid #d5e0e9;border-radius:999px;padding:7px 13px;font-size:12.5px;color:#3d5266}
+.arrival-still-arrow{font-size:20px;color:#0f8a7c}
+.arrival-still-result{font-family:Georgia,serif;font-size:20px;color:#17324d}
+.arrival-still-caption{font-family:'DM Serif Display',serif;font-size:clamp(20px,4vw,26px)}
+.arrival.reduced .arrival-stage,.arrival.reduced .arrival-final{display:none}
+.arrival.reduced .arrival-still{display:flex}
+
+@media(max-width:900px){
+  /* Fewer simultaneous fragments on mobile, same story/caption/ending. */
+  /* Class-based, not positional — robust to the frame-cue element also living in .arrival-stage.
+     Robotics/Northstar/calculator/Brownies stay on mobile (the required action / explicit-
+     responsibility / quiet-context spread survives); the second action-only fragment recedes. */
+  .arrival-frag--secondary{display:none}
+}
+@media(max-width:680px){
+  /* Matches the real Focus mobile collapse point (.scope-focus .focus-grid at 680px). */
+  .arrival-final-tabs{display:none}
+  .arrival-final-body{padding:20px 16px}
+}
 @media (prefers-reduced-motion: reduce){
-  .chaos-frag,.chaos-orb,.chaos-intro-caption{ animation:none!important; opacity:1!important; transform:none!important }
-  .chaos-intro{ transition:none!important }
+  .arrival-frag,.arrival-caption,.arrival-stage,.arrival-final,.arrival-frame-cue{ transition:none!important }
+  .arrival-frag,.arrival-caption,.arrival-frame-cue{ animation:none!important }
+  .arrival-orb{ transition:opacity .3s ease!important }
+  .arrival-explore-cue{ transition:opacity .3s ease!important }
 }
 
 /* ============================================================= */
@@ -580,47 +663,216 @@ button,input,select{font:inherit}
 </style>
 </head>
 <body>
-<!-- ===== Chaos-arrival intro (ARELO-319) — authored/static pre-roll. Plays once, then reveals the
-     existing dashboard below unchanged. Does not touch any Focus/Review/Pins/Calendar/Emails state. ===== -->
-<div id="chaosIntro" class="chaos-intro" role="region" aria-label="Animation: everyday messages, an email, a calendar item and other life admin arriving, then coming together into Arelo's organised Focus view">
-  <div class="chaos-intro-disclaimer">Interactive demo · not a live account</div>
-  <div class="chaos-intro-stage">
-    <div class="chaos-frag" style="--d:.1s">🎒 School trip — consent needed</div>
-    <div class="chaos-frag" style="--d:.7s">💬 Fancy dinner Thursday?</div>
-    <div class="chaos-frag" style="--d:1.3s">📅 Client review · Thu 4:30</div>
-    <div class="chaos-frag" style="--d:1.9s">📦 Parcel — collection notice</div>
-    <div class="chaos-frag" style="--d:2.5s">📝 Brownies cancelled tonight</div>
-    <div class="chaos-orb" aria-hidden="true"></div>
-    <div class="chaos-intro-caption">Your chaos — organised.</div>
+<!-- ===== Arrival (ARELO-331) — seamless hero-animation -> interactive-demo handoff. Plays once
+     over the real demo (already rendered beneath, at #app), then dissolves to reveal it — no
+     route change, no reload, no second document, no end card. Supersedes ARELO-319's #chaosIntro;
+     does not touch any Focus/Review/Pins/Calendar/Emails markup, state or logic. ===== -->
+<div id="arrivalDisclosure" class="arrival-disclosure">Interactive demo · not a live account</div>
+<div id="arrivalOrb" class="arrival-orb" aria-hidden="true"></div>
+<div id="arrivalExploreCue" class="arrival-explore-cue" aria-hidden="true">Explore Gemma's Arelo</div>
+<!-- ARELO-331 amendment (comment 14573): the animation is the first chapter of the demo, not a
+     transition into it — "watch Arelo understand Gemma's life, then step inside what it
+     understood." Every fragment below is real ARELO-275/live-demo evidence (EVIDENCE map /
+     Pins below), kept in its approved semantic register: robotics and the calculator note are
+     things Gemma genuinely still needs to act on; the Brownies note is quiet context, not a
+     task — it is never turned into a Pin, in the animation or in the real demo beneath it. The
+     final composition reuses #focusHero's own copy verbatim (no paraphrase, nothing invented),
+     so what resolves here is textually the same thing the real Focus panel says a moment later. -->
+<div id="arrival" class="arrival" role="region" aria-label="Animation: this is Gemma's Tuesday — her messages, an email and other life admin arriving, then Arelo quietly organising them into her Focus">
+  <div class="arrival-stage" id="arrivalStage">
+    <div class="arrival-frame-cue" id="arrivalFrameCue">This is Gemma's Tuesday.</div>
+    <div class="arrival-frag" style="--d:.1s">✉️ Robotics Club — day change</div>
+    <div class="arrival-frag" style="--d:.7s">💼 Northstar: revised proposal needed</div>
+    <div class="arrival-frag" style="--d:1.3s">📝 URGENT — buy a calculator for Mia</div>
+    <div class="arrival-frag" style="--d:1.9s">🐝 No Brownies for Mia today</div>
+    <div class="arrival-frag arrival-frag--secondary" style="--d:2.5s">💊 Prescription — ready for collection</div>
+    <div class="arrival-caption">Your chaos — organised.</div>
   </div>
-  <button type="button" class="chaos-skip" id="chaosSkip">Skip intro →</button>
+  <div class="arrival-final" id="arrivalFinal" aria-hidden="true">
+    <div class="arrival-final-topbar">
+      <div class="arrival-final-brand">Arelo <span>· Gemma's week</span></div>
+      <div class="arrival-final-tabs"><span class="on">Focus</span><span>Review</span><span>Pins</span><span>Calendar</span><span>Emails</span></div>
+      <div class="arrival-final-meta">Tuesday 8 September · interactive demo, not a live account</div>
+    </div>
+    <div class="arrival-final-body">
+      <div class="arrival-final-head"><h2>Focus</h2><p>The day, already understood.</p></div>
+      <div class="arrival-final-card"><div class="arrival-final-hero" id="arrivalFinalHero"><!-- filled from #focusHero's own copy at runtime, see __arrivalInit --></div></div>
+    </div>
+  </div>
+  <div class="arrival-still" id="arrivalStill" aria-hidden="true">
+    <div class="arrival-still-frame-cue">This is Gemma's Tuesday.</div>
+    <div class="arrival-still-frags">
+      <span>✉️ Robotics Club</span><span>💼 Northstar proposal</span><span>📝 Buy a calculator</span><span>🐝 No Brownies today</span><span>💊 Prescription</span>
+    </div>
+    <div class="arrival-still-arrow">↓</div>
+    <div class="arrival-still-result" id="arrivalStillResult">Focus — the day, already understood.</div>
+    <div class="arrival-still-caption">Your chaos — organised.</div>
+  </div>
+  <button type="button" class="arrival-skip" id="arrivalSkip">Skip intro →</button>
 </div>
 <script>
-(function(){
-  var el = document.getElementById('chaosIntro');
-  if(!el) return;
+function __arrivalInit(){
+  var root = document.getElementById('arrival');
+  var stage = document.getElementById('arrivalStage');
+  var finalLayer = document.getElementById('arrivalFinal');
+  var stillLayer = document.getElementById('arrivalStill');
+  var disclosure = document.getElementById('arrivalDisclosure');
+  var orb = document.getElementById('arrivalOrb');
+  var exploreCue = document.getElementById('arrivalExploreCue');
+  var finalHero = document.getElementById('arrivalFinalHero');
+  var stillResult = document.getElementById('arrivalStillResult');
+  var skipBtn = document.getElementById('arrivalSkip');
+  var shell = document.getElementById('app');
+  if(!root || !shell){ return; }
+
+  // Evidence-to-outcome continuity (ARELO-331 amendment): reuse the real Focus hero's own
+  // rendered copy verbatim — renderAll() has already run by DOMContentLoaded, so this is the
+  // exact text the visitor sees the instant the dissolve reveals .shell, not a paraphrase.
+  function syncFinalCompositionFromRealFocus(){
+    var realHero = document.getElementById('focusHero');
+    if(realHero && finalHero){
+      finalHero.innerHTML = realHero.innerHTML;
+    }
+    if(realHero && stillResult){
+      var h2 = realHero.querySelector('h2');
+      var lead = realHero.querySelector('.lead');
+      if(h2 && lead){ stillResult.textContent = h2.textContent + ' ' + lead.textContent; }
+    }
+  }
+  syncFinalCompositionFromRealFocus();
+
   var done = false;
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  function removeNow(){
+  var mobile = window.matchMedia && window.matchMedia('(max-width:900px)').matches;
+  var prevOverflow = document.body.style.overflow;
+  document.body.style.overflow = 'hidden';
+
+  function isShellReady(){
+    return !!(shell && shell.offsetHeight > 0);
+  }
+
+  function settleOrbThenFade(){
+    if(!orb) return;
+    // Settle just past the real brand mark, measured live off the actual topbar, so the
+    // orb never collides with tab/meta text at any breakpoint rather than a guessed spot.
+    var brand = document.querySelector('.topbar .brand');
+    if(brand){
+      var r = brand.getBoundingClientRect();
+      if(r.width || r.height){
+        var cx = Math.min(r.right + 22, window.innerWidth - 30);
+        var cy = r.top + r.height / 2;
+        orb.style.top = cy + 'px';
+        orb.style.left = cx + 'px';
+      }
+    }
+    orb.classList.add('phase-settle');
+    window.setTimeout(function(){ orb.classList.add('phase-fade'); }, 450);
+    window.setTimeout(function(){ if(orb && orb.parentNode) orb.parentNode.removeChild(orb); }, 1000);
+  }
+
+  function fadeArrivalDisclosure(){
+    // The real topbar's own disclosure is already on screen underneath (never hidden) —
+    // a short overlap, then this chip fades, so there is never a frame with no disclosure.
+    window.setTimeout(function(){
+      if(!disclosure) return;
+      disclosure.setAttribute('data-fade','');
+      window.setTimeout(function(){ if(disclosure && disclosure.parentNode) disclosure.parentNode.removeChild(disclosure); }, 500);
+    }, 300);
+  }
+
+  function showExploreCueThenFade(){
+    // Permission/context only (comment 14573) — never a click target, never blocks the demo
+    // underneath (pointer-events:none throughout), and disappears on its own.
+    if(!exploreCue) return;
+    window.setTimeout(function(){
+      exploreCue.classList.add('show');
+      window.setTimeout(function(){
+        exploreCue.classList.remove('show');
+        window.setTimeout(function(){ if(exploreCue && exploreCue.parentNode) exploreCue.parentNode.removeChild(exploreCue); }, 700);
+      }, 2200);
+    }, 550);
+  }
+
+  function dissolve(){
     if(done) return;
     done = true;
-    if(el && el.parentNode) el.parentNode.removeChild(el);
+    document.body.style.overflow = prevOverflow || '';
+    root.setAttribute('data-leaving','');
+    settleOrbThenFade();
+    fadeArrivalDisclosure();
+    showExploreCueThenFade();
+    window.setTimeout(function(){ if(root && root.parentNode) root.parentNode.removeChild(root); }, 650);
   }
-  function finishWithFade(){
+
+  // Readiness gate: dissolve once fonts are ready and the real .shell has completed layout,
+  // holding the final calm composition (orb still drifting) rather than stalling on a spinner.
+  // Hard ceiling of +2000ms so a slow environment can never trap a visitor in the animation.
+  function readyThenDissolve(delayMs){
+    window.setTimeout(function(){
+      if(done) return;
+      var elapsed = 0;
+      var fontsPromise = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
+      var poll = function(){
+        if(done) return;
+        var fontsOk = !document.fonts || document.fonts.status === 'loaded';
+        if(fontsOk && isShellReady()){
+          window.requestAnimationFrame(dissolve);
+          return;
+        }
+        if(elapsed >= 2000){ dissolve(); return; }
+        elapsed += 100;
+        window.setTimeout(poll, 100);
+      };
+      fontsPromise.then(poll, poll);
+      poll();
+    }, delayMs);
+  }
+
+  function fastForward(){
     if(done) return;
-    done = true;
-    el.setAttribute('data-leaving','');
-    window.setTimeout(function(){ if(el && el.parentNode) el.parentNode.removeChild(el); }, 550);
+    stage.setAttribute('data-done','');
+    finalLayer.setAttribute('data-shown','');
+    readyThenDissolve(0);
   }
-  if(reduce){
-    // No animation at all, no exceptions — skip straight to the existing dashboard.
-    removeNow();
-  } else {
-    var skipBtn = document.getElementById('chaosSkip');
-    if(skipBtn) skipBtn.addEventListener('click', finishWithFade);
-    window.setTimeout(finishWithFade, 4600);
-  }
-})();
+
+  if(skipBtn) skipBtn.addEventListener('click', fastForward);
+  root.addEventListener('pointerdown', fastForward);
+  root.addEventListener('keydown', function(e){
+    if(['Enter',' ','Spacebar','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].indexOf(e.key) !== -1) fastForward();
+  });
+
+  // Deferred one frame so environments that apply a reduced-motion / viewport emulation
+  // asynchronously around navigation (automated test harnesses; some embedded webviews)
+  // are guaranteed settled before the branch is chosen — matchMedia itself stays live either way.
+  window.requestAnimationFrame(function(){
+    reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    mobile = window.matchMedia && window.matchMedia('(max-width:900px)').matches;
+    if(reduce){
+      // Static two-state still, not an instant skip — keeps the chaos -> organised meaning,
+      // loses only the motion. Held ~1.6s, dismissible immediately by Skip or any interaction.
+      root.classList.add('reduced');
+      if(orb) orb.classList.add('phase-in');
+      readyThenDissolve(1600);
+    } else {
+      window.setTimeout(function(){ if(orb) orb.classList.add('phase-in'); }, 2600);
+      var authoredEnd = mobile ? 4200 : 5200;
+      window.setTimeout(function(){
+        if(done) return;
+        stage.setAttribute('data-done','');
+        finalLayer.setAttribute('data-shown','');
+      }, authoredEnd - 600);
+      readyThenDissolve(authoredEnd);
+    }
+  });
+}
+// #app (.shell) is parsed after this point in the document, so defer until the DOM is built —
+// negligible delay on a static inline document, and the disclosure/orb/first fragment are
+// already painted from their own markup/CSS regardless of when this handler attaches.
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', __arrivalInit);
+} else {
+  __arrivalInit();
+}
 </script>
 <div class="shell" id="app">
   <header class="topbar">
